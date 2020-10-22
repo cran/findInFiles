@@ -1,0 +1,16 @@
+f878da61b40daed53eef1a43458f8194 *DESCRIPTION
+6c8776f5d5c1822244369c82f93dc336 *LICENSE.note
+20bd62ff58ff776b7d4cc27ff1039ef4 *NAMESPACE
+52aa6238b6df3bcc32d467be749a1392 *NEWS.md
+e38c618b049b84558be1d513f7411195 *R/findInFiles.R
+0fd4e668110d15e900a5c92d3a4fcbee *R/grepInFiles.R
+db00af0e9d44e0187867bc2e25880a45 *README.md
+3ada09dde8df3100984cc35dd805327c *inst/example/folder/f.R
+de91a8e92083e584f7fd88e9c8fd1bf4 *inst/example/folder/subfolder/g.R
+9fabc6c3a944bce9a5505f8c59e9eebf *inst/example/folder/subfolder/subsubfolder/h.R
+7bf24f5bce819714d9e88a7e68a141cf *inst/htmlwidgets/findInFiles.js
+c92c1b286d7ec1db2642c06e26085e72 *inst/htmlwidgets/findInFiles.yaml
+81c7e0851a84331c9a8c23bfbe28e661 *inst/htmlwidgets/lib/ansi-to-html.css
+cc6f73335d67602740f2bbd9d71b3bcd *inst/htmlwidgets/lib/ansi-to-html_bundle.js
+cac8628091f7f705b1c151ef214413f0 *man/findInFiles-shiny.Rd
+dbc913cafa72d271e88f02088cbd6733 *man/findInFiles.Rd
