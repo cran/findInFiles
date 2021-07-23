@@ -1,9 +1,9 @@
-7be65a456e7fa24a0ecfa7022815ba12 *DESCRIPTION
+87baab69143da537e72b5c27edaecfc9 *DESCRIPTION
 6c8776f5d5c1822244369c82f93dc336 *LICENSE.note
-20bd62ff58ff776b7d4cc27ff1039ef4 *NAMESPACE
-d99deac14286e8733b8d6708a81f26a8 *NEWS.md
-cfc47c90fd8fb36d7aac6251364d7f9f *R/findInFiles.R
-844778d29656145ca5737608067b858d *R/grepInFiles.R
+b26a56a4070b47dfd05306b6569777f9 *NAMESPACE
+1901ccf8cdb8b9896e4f1473ce3444f0 *NEWS.md
+3162aa5b8c62700ec90be60b8fff56ff *R/findInFiles.R
+1993342b5e0601514c6fff00144c53db *R/grepInFiles.R
 db00af0e9d44e0187867bc2e25880a45 *README.md
 3ada09dde8df3100984cc35dd805327c *inst/example/folder/f.R
 de91a8e92083e584f7fd88e9c8fd1bf4 *inst/example/folder/subfolder/g.R
@@ -12,5 +12,6 @@ de91a8e92083e584f7fd88e9c8fd1bf4 *inst/example/folder/subfolder/g.R
 c92c1b286d7ec1db2642c06e26085e72 *inst/htmlwidgets/findInFiles.yaml
 81c7e0851a84331c9a8c23bfbe28e661 *inst/htmlwidgets/lib/ansi-to-html.css
 cc6f73335d67602740f2bbd9d71b3bcd *inst/htmlwidgets/lib/ansi-to-html_bundle.js
+32d713aef7fb7eb28ea498f896723fc1 *man/FIF2dataframe.Rd
 cac8628091f7f705b1c151ef214413f0 *man/findInFiles-shiny.Rd
-dbc913cafa72d271e88f02088cbd6733 *man/findInFiles.Rd
+9e27753f98a6d5543fed713331e89d99 *man/findInFiles.Rd
