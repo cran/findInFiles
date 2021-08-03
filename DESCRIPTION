@@ -1,7 +1,7 @@
 Package: findInFiles
 Type: Package
 Title: Find Pattern in Files
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person(
       "Stéphane", "Laurent", 
@@ -16,15 +16,15 @@ Description: Creates a HTML widget which displays the results of searching for a
 License: GPL-3
 Encoding: UTF-8
 SystemRequirements: grep
-Imports: htmlwidgets, stringr, crayon
+Imports: htmlwidgets, stringr, crayon, vctrs, tibble, stringi
 Suggests: shiny
 URL: https://github.com/stla/findInFiles
 BugReports: https://github.com/stla/findInFiles/issues
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2021-07-23 17:25:27 UTC; SDL96354
+Packaged: 2021-08-03 08:51:48 UTC; SDL96354
 Author: Stéphane Laurent [aut, cre],
   Rob Burns [ctb, cph] ('ansi-to-html' library)
 Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
 Repository: CRAN
-Date/Publication: 2021-07-23 17:40:02 UTC
+Date/Publication: 2021-08-03 09:10:02 UTC

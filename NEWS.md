@@ -1,3 +1,14 @@
+# findInFiles 0.3.0
+
+* Added the option '--with-filename' to 'grep'. Without this option, the file 
+name does not appear in the output when there is a unique file in the results.
+
+* The `output` argument must now be one of `"viewer"` (the default), 
+`"tibble"`, or `"viewer+tibble"`. These two latter options allow to get the 
+results of the search in a tibble, in which the matched pattern is colored in 
+red.
+
+
 # findInFiles 0.2.0
 
 The `findInFiles` function has a new argument `output`. It can be `"viewer"` 

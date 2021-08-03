@@ -1,15 +1,3 @@
-isPositiveInteger <- function(x){
-  is.numeric(x) && (length(x) == 1L) && !is.na(x) && (floor(x) == x)
-}
-
-isString <- function(x){
-  is.character(x) && (length(x) == 1L) && !is.na(x)
-}
-
-isBoolean <- function(x){
-  is.logical(x) && (length(x) == 1L) && !is.na(x)
-}
-
 getFiles <- function(ext, depth){
   stopifnot(isPositiveInteger(depth))
   wildcards <- Reduce(
@@ -17,10 +5,6 @@ getFiles <- function(ext, depth){
     right = TRUE, accumulate = TRUE
   )
   Sys.glob(wildcards)
-}
-
-inSolaris <- function(){
-  grepl("sunos", tolower(Sys.info()["sysname"]))
 }
 
 grepInFiles <- function(
@@ -45,10 +29,10 @@ grepInFiles <- function(
   stopifnot(isBoolean(perl))
   wd <- setwd(directory)
   on.exit(setwd(wd))
-  if(output == "dataframe"){
-    opts <- c("--colour=never", "-n")
+  if(output == "tibble"){
+    opts <- c("--colour=never", "-n", "--with-filename")
   }else{
-    opts <- c("--colour=always", "-n")
+    opts <- c("--colour=always", "-n", "--with-filename")
   }
   if(wholeWord) opts <- c(opts, "-w")
   if(ignoreCase) opts <- c(opts, "-i")
@@ -79,6 +63,12 @@ grepInFiles <- function(
     ))
   }else{
     files <- getFiles(ext, depth)
+    if(length(files) == 0L){
+      message(
+        sprintf("No file with extension '%s' has been found.", ext)
+      )
+      return(invisible(NULL))
+    }
     suppressWarnings(system2(
       command,
       args = c(shQuote(pattern), shQuote(files), opts),
@@ -86,11 +76,18 @@ grepInFiles <- function(
     ))
   }
   if(!is.null(status <- attr(results, "status"))){
-    if(status == 1){
+    if(status == 1L){
       message("No results.")
+      return(invisible(NULL))
     }else{
       stop("An error occured. Possibly invalid 'grep' command.")
     }
   }
+  attr(results, "options") <- list(
+    "pattern"    = pattern,
+    "wholeWord"  = wholeWord,
+    "ignoreCase" = ignoreCase,
+    "perl"       = perl
+  )
   results
 }
