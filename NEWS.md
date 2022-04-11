@@ -1,3 +1,9 @@
+# findInFiles 0.4.0
+
+Now the package provides a Shiny application (`shinyFIF()`) allowing to run 
+`findInFiles` and to navigate in the results.
+
+
 # findInFiles 0.3.0
 
 * Added the option '--with-filename' to 'grep'. Without this option, the file 
