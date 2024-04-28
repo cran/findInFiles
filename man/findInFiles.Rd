@@ -2,26 +2,63 @@
 % Please edit documentation in R/findInFiles.R
 \name{findInFiles}
 \alias{findInFiles}
+\alias{fif}
+\alias{fifR}
 \title{Find pattern in files}
 \usage{
 findInFiles(
-  ext,
+  extensions,
   pattern,
   depth = NULL,
+  maxCountPerFile = NULL,
+  maxCount = NULL,
   wholeWord = FALSE,
   ignoreCase = FALSE,
+  extended = FALSE,
+  fixed = FALSE,
   perl = FALSE,
+  includePattern = NULL,
   excludePattern = NULL,
   excludeFoldersPattern = NULL,
+  moreOptions = NULL,
   root = ".",
-  output = "viewer"
+  output = "viewer",
+  elementId = NULL
 )
+
+fif(
+  extensions,
+  pattern,
+  depth = NULL,
+  maxCountPerFile = NULL,
+  maxCount = NULL,
+  wholeWord = FALSE,
+  ignoreCase = FALSE,
+  extended = FALSE,
+  fixed = FALSE,
+  perl = FALSE,
+  includePattern = NULL,
+  excludePattern = NULL,
+  excludeFoldersPattern = NULL,
+  moreOptions = NULL,
+  root = ".",
+  output = "viewer",
+  elementId = NULL
+)
+
+fifR(...)
 }
 \arguments{
-\item{ext}{file extension, e.g. \code{"R"} or \code{"js"}}
+\item{extensions}{extension(s) of the files to include in the search
+(case-sensitive), e.g. \code{"R"} or \code{c("R", "Rmd")}, or \code{"*"}
+to search in all files}
 
 \item{pattern}{pattern to search for, a regular expression, e.g.
-\code{"function"} or \code{"^function"}}
+\code{"function"} or \code{"^function"}, or a string if \code{fixed=TRUE};
+by default the pattern is considered as a basic regular expression, but
+this can be changed to an extended regular expression by setting
+\code{extended=TRUE} or to a Perl regular expression by setting
+\code{perl=TRUE}}
 
 \item{depth}{depth of the search, \code{NULL} or a negative number for an
 entire recursive search (subdirectories, subdirectories of subdirectories,
@@ -29,29 +66,71 @@ etc.), otherwise a positive integer: \code{0} to search in the root
 directory only, \code{1} to search in the root directory and its
 subdirectories, etc.}
 
+\item{maxCountPerFile}{maximum number of results per file, \code{NULL} for
+an unlimited number, otherwise a positive integer; when an integer
+\code{m} is supplied, \code{grep} stops to search in each file after it
+finds \code{m} results}
+
+\item{maxCount}{maximum number of results, \code{NULL} for an unlimited
+number, otherwise a positive integer; supplying an integer \code{m} just
+truncates the output, it does not stop \code{grep} after \code{m} results
+are found (so there is no gain of efficiency)}
+
 \item{wholeWord}{logical, whether to match the whole pattern}
 
 \item{ignoreCase}{logical, whether to ignore the case}
 
-\item{perl}{logical, whether \code{pattern} is a Perl regular expression}
+\item{extended}{logical, whether the pattern given in the \code{pattern}
+is an extended regular expression; if \code{TRUE}, you can search for
+multiple patterns by passing a string like \code{"(pattern1|pattern2|...)"}
+to the \code{pattern} argument}
 
-\item{excludePattern}{a pattern; exclude from search the files and folders
-which match this pattern}
+\item{fixed}{logical, whether the pattern given in the \code{pattern}
+argument is a string to be matched as is, or, to search for multiple
+patterns, multiple strings separated by \code{"\n"}}
 
-\item{excludeFoldersPattern}{a pattern; exclude from search the folders
-which match this pattern}
+\item{perl}{logical, whether the pattern given in the \code{pattern}
+argument is a Perl regular expression; if \code{TRUE}, you can search for
+multiple patterns by passing a string like \code{"(pattern1|pattern2|...)"}
+to the \code{pattern} argument}
+
+\item{includePattern}{this argument is ignored if \code{depth} is not a
+positive integer; it must be a pattern or a vector of patterns, and only
+the files whose name matches this pattern or one of these patterns will be
+included in the search}
+
+\item{excludePattern}{a pattern or a vector of patterns; files and folders
+whose name matches this pattern or one of these patterns will be excluded
+from search}
+
+\item{excludeFoldersPattern}{a pattern or a vector of patterns; folders
+whose name matches this pattern or one of these patterns will be excluded
+from search}
+
+\item{moreOptions}{additional options passed to the \code{grep} command,
+for \code{grep} experts}
 
 \item{root}{path to the root directory to search from}
 
 \item{output}{one of \code{"viewer"}, \code{"tibble"} or
-\code{"viewer+tibble"}; see examples}
+\code{"viewer+tibble"}; set \code{"tibble"} to get a tibble,
+\code{"viewer"} to get a \code{htmlwidget}, and \code{"viewer+tibble"}
+to get a \code{htmlwidget} from which you can extract a tibble
+with the function \code{\link{FIF2tibble}}}
+
+\item{elementId}{a HTML id, usually useless}
+
+\item{...}{arguments other than \code{extensions} passed to
+\code{findInFiles}}
 }
 \value{
 A tibble if \code{output="tibble"}, otherwise a
   \code{htmlwidget} object.
 }
 \description{
-Find a pattern in some files.
+Find a pattern in some files. The functions \code{findInFiles}
+  and \code{fif} are the same, and \code{fifR(...)} is the same as
+  \code{findInFiles(extensions = "R", ...)}.
 }
 \examples{
 library(findInFiles)
@@ -66,5 +145,8 @@ FIF2dataframe(fif)
 fif
 
 folder <- system.file("www", "shared", package = "shiny")
-findInFiles("css", "outline", excludePattern = "*.min.css", root = folder)
+findInFiles(
+  "css", "color", root = folder,
+  excludePattern = c("*.min.css", "selectize*", "shiny*")
+)
 }

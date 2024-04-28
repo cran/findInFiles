@@ -3,10 +3,11 @@ shinyServer(function(input, output, session){
   iv <- InputValidator$new()
   iv$add_rule(
     "ext",
-    sv_regex("^[a-zA-Z0-9\\+]+$", "Only alphanumeric or 'c++'")
+    sv_regex("^[a-zA-Z0-9\\+,]+$", "Only alphanumeric or 'c++'.")
   )
   iv$add_rule("pattern", sv_required())
-  iv$add_rule("depth", sv_integer())
+  iv$add_rule("depth", isPositiveIntegerOrNA)
+  iv$add_rule("maxCount", isPositiveIntegerOrNA)
   iv$enable()
 
   shinyDirChoose(
@@ -25,10 +26,18 @@ shinyServer(function(input, output, session){
   })
 
   observeEvent(input[["btnwd"]], {
-    tree <- capture.output(dir_tree(recurse = 2, type = "directory"))
+    msg <- tryCatch({
+      tree <- capture.output(dir_tree(recurse = 1, type = "directory"))
+      tags$pre(paste0(tree, collapse = "\n"))
+    }, error = function(e) {
+      tags$span(
+        "Failed to scan the current folder.",
+        style = "color: red;"
+      )
+    })
     showModal(
       modalDialog(
-        tags$pre(paste0(tree, collapse = "\n")),
+        msg,
         title = "Current folder (showing two levels)"
       )
     )
@@ -37,11 +46,17 @@ shinyServer(function(input, output, session){
   Tabsets <- reactiveVal(character(0L))
   Editors <- reactiveVal(character(0L))
 
-  negativeDepth <- reactive({
-    if(input[["depth"]] < 0) TRUE
+  Depth <- reactive({
+    if(!is.na(input[["depth"]])) {
+      input[["depth"]]
+    }
   })
 
-  observeEvent(negativeDepth(), {
+  infiniteDepth <- reactive({
+    if(is.na(input[["depth"]])) TRUE
+  })
+
+  observeEvent(infiniteDepth(), {
     show_toast(
       title = "Unlimited depth",
       text = "Be sure that the current folder is not too deep",
@@ -50,6 +65,12 @@ shinyServer(function(input, output, session){
       position = "bottom-start"
     )
   }, once = TRUE)
+
+  maxCount <- reactive({
+    if(isTRUE(input[["maxCount"]] > 0)) {
+      input[["maxCount"]]
+    }
+  })
 
   observeEvent(input[["closetab"]], {
     index <- match(input[["closetab"]], names(Tabsets()))
@@ -201,13 +222,35 @@ shinyServer(function(input, output, session){
 
   output[["results"]] <- renderFIF({
     req(Run())
-    findInFiles(
-      ext = isolate(input[["ext"]]),
-      pattern = isolate(input[["pattern"]]),
-      depth = isolate(input[["depth"]]),
-      wholeWord = isolate(input[["wholeWord"]]),
-      ignoreCase = isolate(input[["ignoreCase"]])
+    extensions <- strsplit(isolate(input[["ext"]]), ",", fixed = TRUE)[[1L]]
+    extensions <- Filter(function(x) nchar(x) > 0L, extensions)
+    patternType <- isolate(input[["patternType"]])
+    fifWidget <- findInFiles(
+      extensions = extensions,
+      pattern    = isolate(input[["pattern"]]),
+      depth      = isolate(Depth()),
+      maxCount   = isolate(maxCount()),
+      wholeWord  = isolate(input[["wholeWord"]]),
+      ignoreCase = isolate(input[["ignoreCase"]]),
+      extended   = patternType == "extended",
+      fixed      = patternType == "fixed",
+      perl       = patternType == "perl"
     )
+    if(attr(fifWidget, "maxCountExceeded")) {
+      show_toast(
+        title = "Reached maximum",
+        text = paste0(
+          "Maximum number of results has been exceeded ",
+          sprintf(
+            "(there are %d results).", attr(fifWidget, "numberOfResults")
+          )
+        ),
+        type = "warning",
+        timer = 7000,
+        position = "top-end"
+      )
+    }
+    fifWidget
   })
 
 })

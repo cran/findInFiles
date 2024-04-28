@@ -9,7 +9,7 @@ shinyUI(fluidPage(
       width = 3,
       tags$fieldset(
         tags$legend(
-          actionButton("btnwd", "Current folder", class = "btn-info")
+          actionButton("btnwd", "Current folder", class = "btn-info btn-sm")
         ),
         textOutput("wd"),
         shinyDirButton(
@@ -17,43 +17,59 @@ shinyUI(fluidPage(
           label = "Change",
           title = "Choose a folder",
           buttonType = "primary",
-          class = "btn-block",
+          class = "btn-block btn-sm",
           onclick = '$("#results").empty();'
         )
       ),
       br(),
-      textInput(
-        "ext", "Extension:",
+      smallInput(textInput(
+        "ext", "Extensions (comma-separated):",
         value = "R"
-      ),
+      )),
       textInput(
-        "pattern", "Pattern:"
+        "pattern", "Pattern to search:"
       ),
-      numericInput(
-        "depth", "Depth (set -1 for unlimited depth):",
-        value = 1, min = -1, step = 1
+      smallInput(numericInput(
+        "depth", "Depth; blank for unlimited:",
+        value = 1, min = 0, step = 1
+      )),
+      actionButton(
+        "run",
+        tags$span(
+          "Find in files", class = "mylabel"
+        ),
+        class = "btn-danger btn-block"
       ),
-      fluidRow(
-        column(
-          6,
+      br(),
+      dropMenu(
+        actionButton(
+          "menu", "Pattern options", class = "btn-success btn-block btn-sm"
+        ),
+        splitLayout(
           checkboxInput(
             "wholeWord", "Whole word"
-          )
-        ),
-        column(
-          6,
+          ),
           checkboxInput(
             "ignoreCase", "Ignore case"
           )
-        )
+        ),
+        awesomeRadio(
+          "patternType",
+          "Pattern type",
+          choices = list(
+            "Basic regular expression" = "basic",
+            "Fixed strings" = "fixed",
+            "Extended regular expression" = "extended",
+            "Perl regular expression" = "perl"
+          )
+        ),
+        placement = "top",
+        maxWidth = "600px"
       ),
-      wellPanel(
-        style = "border-color: #e4c4c4",
-        actionButton(
-          "run", "Find",
-          class = "btn-danger btn-block"
-        )
-      )
+      smallInput(numericInput(
+        "maxCount", "Maximum number of results; blank for unlimited:",
+        value = 100, min = 1, step = 50
+      ))
     ),
     mainPanel(
       width = 9,

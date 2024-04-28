@@ -1,24 +1,67 @@
-#' Find pattern in files
-#' @description Find a pattern in some files.
+#' @title Find pattern in files
+#' @description Find a pattern in some files. The functions \code{findInFiles}
+#'   and \code{fif} are the same, and \code{fifR(...)} is the same as
+#'   \code{findInFiles(extensions = "R", ...)}.
 #'
-#' @param ext file extension, e.g. \code{"R"} or \code{"js"}
+#' @name findInFiles
+#' @rdname findInFiles
+#'
+#' @param extensions extension(s) of the files to include in the search
+#'   (case-sensitive), e.g. \code{"R"} or \code{c("R", "Rmd")}, or \code{"*"}
+#'   to search in all files
 #' @param pattern pattern to search for, a regular expression, e.g.
-#'   \code{"function"} or \code{"^function"}
+#'   \code{"function"} or \code{"^function"}, or a string if \code{fixed=TRUE};
+#'   by default the pattern is considered as a basic regular expression, but
+#'   this can be changed to an extended regular expression by setting
+#'   \code{extended=TRUE} or to a Perl regular expression by setting
+#'   \code{perl=TRUE}
 #' @param depth depth of the search, \code{NULL} or a negative number for an
 #'   entire recursive search (subdirectories, subdirectories of subdirectories,
 #'   etc.), otherwise a positive integer: \code{0} to search in the root
 #'   directory only, \code{1} to search in the root directory and its
 #'   subdirectories, etc.
+#' @param maxCountPerFile maximum number of results per file, \code{NULL} for
+#'   an unlimited number, otherwise a positive integer; when an integer
+#'   \code{m} is supplied, \code{grep} stops to search in each file after it
+#'   finds \code{m} results
+#' @param maxCount maximum number of results, \code{NULL} for an unlimited
+#'   number, otherwise a positive integer; supplying an integer \code{m} just
+#'   truncates the output, it does not stop \code{grep} after \code{m} results
+#'   are found (so there is no gain of efficiency)
 #' @param wholeWord logical, whether to match the whole pattern
 #' @param ignoreCase logical, whether to ignore the case
-#' @param perl logical, whether \code{pattern} is a Perl regular expression
-#' @param excludePattern a pattern; exclude from search the files and folders
-#'   which match this pattern
-#' @param excludeFoldersPattern a pattern; exclude from search the folders
-#'   which match this pattern
+#' @param extended logical, whether the pattern given in the \code{pattern}
+#'   is an extended regular expression; if \code{TRUE}, you can search for
+#'   multiple patterns by passing a string like \code{"(pattern1|pattern2|...)"}
+#'   to the \code{pattern} argument
+#' @param fixed logical, whether the pattern given in the \code{pattern}
+#'   argument is a string to be matched as is, or, to search for multiple
+#'   patterns, multiple strings separated by \code{"\n"}
+#' @param perl logical, whether the pattern given in the \code{pattern}
+#'   argument is a Perl regular expression; if \code{TRUE}, you can search for
+#'   multiple patterns by passing a string like \code{"(pattern1|pattern2|...)"}
+#'   to the \code{pattern} argument
+#' @param includePattern this argument is ignored if \code{depth} is not a
+#'   positive integer; it must be a pattern or a vector of patterns, and only
+#'   the files whose name matches this pattern or one of these patterns will be
+#'   included in the search
+#' @param excludePattern a pattern or a vector of patterns; files and folders
+#'   whose name matches this pattern or one of these patterns will be excluded
+#'   from search
+#' @param excludeFoldersPattern a pattern or a vector of patterns; folders
+#'   whose name matches this pattern or one of these patterns will be excluded
+#'   from search
+#' @param moreOptions additional options passed to the \code{grep} command,
+#'   for \code{grep} experts
 #' @param root path to the root directory to search from
 #' @param output one of \code{"viewer"}, \code{"tibble"} or
-#'   \code{"viewer+tibble"}; see examples
+#'   \code{"viewer+tibble"}; set \code{"tibble"} to get a tibble,
+#'   \code{"viewer"} to get a \code{htmlwidget}, and \code{"viewer+tibble"}
+#'   to get a \code{htmlwidget} from which you can extract a tibble
+#'   with the function \code{\link{FIF2tibble}}
+#' @param elementId a HTML id, usually useless
+#' @param ... arguments other than \code{extensions} passed to
+#'   \code{findInFiles}
 #'
 #' @return A tibble if \code{output="tibble"}, otherwise a
 #'   \code{htmlwidget} object.
@@ -41,12 +84,18 @@
 #' fif
 #'
 #' folder <- system.file("www", "shared", package = "shiny")
-#' findInFiles("css", "outline", excludePattern = "*.min.css", root = folder)
+#' findInFiles(
+#'   "css", "color", root = folder,
+#'   excludePattern = c("*.min.css", "selectize*", "shiny*")
+#' )
 findInFiles <- function(
-  ext, pattern, depth = NULL,
-  wholeWord = FALSE, ignoreCase = FALSE, perl = FALSE,
+  extensions, pattern, depth = NULL, maxCountPerFile = NULL, maxCount = NULL,
+  wholeWord = FALSE, ignoreCase = FALSE,
+  extended = FALSE, fixed = FALSE, perl = FALSE,
+  includePattern = NULL,
   excludePattern = NULL, excludeFoldersPattern = NULL,
-  root = ".", output = "viewer"
+  moreOptions = NULL,
+  root = ".", output = "viewer", elementId = NULL
 ){
 
   if(inSolaris() && Sys.which("ggrep") == ""){
@@ -54,12 +103,12 @@ findInFiles <- function(
     return(invisible(NULL))
   }
 
-  stopifnot(isString(ext))
-
-  if(isBinaryExtension(ext)){
-    stop(
-      sprintf("This file extension ('%s') is not allowed.", ext)
-    )
+  for(ext in extensions) {
+    if(isBinaryExtension(ext)){
+      stop(
+        sprintf("This file extension ('%s') is not allowed.", ext)
+      )
+    }
   }
 
   stopifnot(isString(output))
@@ -84,27 +133,32 @@ findInFiles <- function(
   )
 
   results <- grepInFiles(
-    ext = ext, pattern = pattern, depth = depth,
-    wholeWord = wholeWord, ignoreCase = ignoreCase, perl = perl,
+    ext = extensions, pattern = pattern, depth = depth,
+    maxCountPerFile = maxCountPerFile, maxCount = maxCount,
+    wholeWord = wholeWord, ignoreCase = ignoreCase,
+    extended = extended, fixed = fixed, perl = perl,
+    includePattern = includePattern,
     excludePattern = excludePattern,
     excludeFoldersPattern = excludeFoldersPattern,
+    moreOptions = moreOptions,
     directory = root, output = output
   )
 
+  resultsDF <- NULL
   if(output %in% c("tibble", "viewer+tibble")){
     if(output == "viewer+tibble"){
       strippedResults <- strip_style(results)
     }else{
       strippedResults <- results
     }
-    resultsMatrix <- stringr::str_split_fixed(strippedResults, ":", n = 3L)
-    colnames(resultsMatrix) <- c("file", "line", "code")
+    resultsMatrix <- str_split_fixed(strippedResults, ":", n = 3L)
+    colnames(resultsMatrix) <- c("file", "line", "match")
     resultsDF <- as.data.frame(resultsMatrix, stringsAsFactors = FALSE)
     resultsDF[["line"]] <- as.integer(resultsDF[["line"]])
     if(!is.null(results)){
       opts <- attr(results, "options")
-      resultsDF[["code"]] <- do.call(
-        function(...){redifyVector(resultsDF[["code"]], ...)}, opts
+      resultsDF[["match"]] <- do.call(
+        function(...){redifyVector(resultsDF[["match"]], ...)}, opts
       )
     }
     resultsDF <- tibble(resultsDF)
@@ -114,34 +168,39 @@ findInFiles <- function(
     }
   }
 
+  maxCountExceeded <- isTRUE(attr(results, "maxCountExceeded"))
+  numberOfResults <- attr(results, "numberOfResults")
+
   if(is.null(results)){
-    ansi <- "No results."
+    ansi <- "No result."
   }else{
     ansi <- paste0(results, collapse = "\n")
   }
 
-  # forward options using x
-  if(output == "viewer"){
-    x = list(
-      ansi = ansi
-    )
-  }else{ # viewer+tibble
-    x = list(
-      ansi = ansi,
-      results = resultsDF
-    )
-  }
-
   # create widget
-  createWidget(
+  widget <- createWidget(
     name = "findInFiles",
-    x = x,
+    x = list("ansi" = ansi),
     width = NULL,
     height = NULL,
     package = "findInFiles",
-    elementId = NULL
+    elementId = elementId
   )
+  attr(widget, "maxCountExceeded") <- maxCountExceeded
+  attr(widget, "numberOfResults")  <- numberOfResults
+  attr(widget, "tibble")           <- resultsDF
+  widget
 
+}
+
+#' @rdname findInFiles
+#' @export
+fif <- findInFiles
+
+#' @rdname findInFiles
+#' @export
+fifR <- function(...) {
+  findInFiles(extensions = "R", ...)
 }
 
 #' @title Output of `findInFiles` as a tibble
@@ -172,10 +231,11 @@ FIF2tibble <- function(fif){
       call. = TRUE
     )
   }
-  output <- fif[["x"]][["results"]]
+  output <- attr(fif, "tibble")
   if(is.null(output)){
     message(
-      'You did not set the option `output = "viewer+tibble"`.'
+      'You did not set the option `output = "viewer+tibble"` ',
+      ' in the call to `findInFiles`.'
     )
     return(invisible(NULL))
   }
@@ -206,7 +266,6 @@ FIF2dataframe <- function(fif){
   if(is.null(tbl)){
     return(NULL)
   }
-  tbl[["code"]] <- vec_data(strip_style(tbl[["code"]]))
+  tbl[["match"]] <- vec_data(strip_style(tbl[["match"]]))
   as.data.frame(tbl)
 }
-
